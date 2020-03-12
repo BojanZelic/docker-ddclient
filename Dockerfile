@@ -7,6 +7,8 @@ ARG DDCLIENT_VERSION
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="saarg"
 
+COPY ./ddclient/ddclient /tmp/ddclient/ddclient
+
 RUN \
  echo "**** install build packages ****" && \
  apk add --no-cache --virtual=build-dependencies \
@@ -31,18 +33,6 @@ RUN \
 	Data::Validate::IP \
 	JSON::Any && \
  echo "**** install ddclient ****" && \
- if [ -z ${DDCLIENT_VERSION+x} ]; then \
-	DDCLIENT_VERSION=$(curl -sX GET "https://api.github.com/repos/ddclient/ddclient/releases/latest" \
-	| awk '/tag_name/{print $4;exit}' FS='[""]'); \
- fi && \
- mkdir -p \
-	/tmp/ddclient && \
- curl -o \
- /tmp/ddclient.tar.gz -L \
-	"https://github.com/ddclient/ddclient/archive/${DDCLIENT_VERSION}.tar.gz" && \
- tar xf \
- /tmp/ddclient.tar.gz -C \
-	/tmp/ddclient --strip-components=1 && \
  install -Dm755 /tmp/ddclient/ddclient /usr/bin/ && \
  echo "**** cleanup ****" && \
  apk del --purge \
