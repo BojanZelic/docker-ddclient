@@ -26,6 +26,7 @@ use Sys::Hostname;
 use IO::Socket;
 use Data::Validate::IP;
 
+my $cf_host = $ENV{'CF_HOST'};
 my $cf_client = $ENV{'CF_ACCESS_CLIENT_ID'};
 my $cf_secret = $ENV{'CF_ACCESS_CLIENT_SECRET'};
 my $version  = "3.9.1";
@@ -2073,8 +2074,10 @@ sub geturl {
 
     my $auth = encode_base64("${login}:${password}", "");
     $request .= "Authorization: Basic $auth\n" if $login || $password;
-    $request .= "CF-Access-Client-Id: ${cf_client}\n";
-    $request .= "CF-Access-Client-Secret: ${cf_secret}\n";
+    if ($server eq $cf_host) {
+        $request .= "CF-Access-Client-Id: ${cf_client}\n";
+        $request .= "CF-Access-Client-Secret: ${cf_secret}\n";
+    }
     $request .= "User-Agent: ${program}/${version}\n";
     if ($data) {
         $request .= "Content-Type: application/x-www-form-urlencoded\n" if ! $headers =~ /^Content-Type: /;
@@ -2917,7 +2920,7 @@ sub nic_noip_update {
 	info("setting IP address to %s for %s", $ip, $hosts);
 	verbose("UPDATE:","updating %s", $hosts);
 
-	my $url = "http://$config{$h}{'server'}/nic/update?system=";
+	my $url = "https://$config{$h}{'server'}/nic/update?system=";
     $url .= 'noip';
 	$url  .= "&hostname=$hosts";
 	$url  .= "&myip=";
